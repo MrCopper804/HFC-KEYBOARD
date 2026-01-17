@@ -17,7 +17,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 7.5 # Humne version yahan lock kar diya hai
+          gradle-version: 7.5
 
       - name: Build APK
         run: gradle assembleDebug --no-daemon
