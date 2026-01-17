@@ -14,15 +14,16 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Initialize Gradle Wrapper
+      # Ye step Gradle wrapper ko khud create karega agar wo missing hai
+      - name: Force Generate Gradle Wrapper
         run: |
           gradle wrapper --gradle-version 7.4.2
           chmod +x gradlew
 
-      - name: Build with Gradle
+      - name: Build APK with Gradle
         run: ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload APK Result
         uses: actions/upload-artifact@v3
         with:
           name: HFC-Keyboard-APK
