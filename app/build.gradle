@@ -1,0 +1,1 @@
+plugins { id 'com.android.application' }; android { namespace 'com.hfc.keyboard'; compileSdk 33; defaultConfig { applicationId 'com.hfc.keyboard'; minSdk 21; targetSdk 33; versionCode 1; versionName '1.0' } }
