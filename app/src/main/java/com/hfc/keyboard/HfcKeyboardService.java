@@ -5,8 +5,27 @@ import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HfcKeyboardService extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
+    private boolean isHfcMode = true; // Default HFC mode
+    private Map<String, String> hfcToEng = new HashMap<>();
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // HFC to English Mapping
+        hfcToEng.put("+", "a");  hfcToEng.put("[]", "b"); hfcToEng.put("©", "c");
+        hfcToEng.put("÷", "d");  hfcToEng.put("=", "e");  hfcToEng.put("_", "f");
+        hfcToEng.put(">", "g");  hfcToEng.put("|", "h");  hfcToEng.put("!", "i");
+        hfcToEng.put("#", "j");  hfcToEng.put(":", "k");  hfcToEng.put("<", "l");
+        hfcToEng.put("*", "m");  hfcToEng.put("°", "n");  hfcToEng.put("()", "o");
+        hfcToEng.put("¶", "p");  hfcToEng.put("?", "q");  hfcToEng.put("®", "r");
+        hfcToEng.put("$", "s");  hfcToEng.put("™", "t");  hfcToEng.put("'", "u");
+        hfcToEng.put("^", "v");  hfcToEng.put("&", "w");  hfcToEng.put("`", "x");
+        hfcToEng.put("~", "y");  hfcToEng.put("℅", "z");
+    }
 
     @Override
     public View onCreateInputView() {
@@ -21,18 +40,31 @@ public class HfcKeyboardService extends InputMethodService implements KeyboardVi
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) return;
 
+        if (primaryCode == -100) { // Custom code for Switch Button
+            isHfcMode = !isHfcMode;
+            return;
+        }
+
         if (primaryCode == Keyboard.KEYCODE_DELETE) {
             ic.deleteSurroundingText(1, 0);
-        } else if (primaryCode == 32) { // Space bar
+        } else if (primaryCode == 32) {
             ic.commitText(" ", 1);
         } else {
             char code = (char) primaryCode;
-            ic.commitText(convert(code), 1);
+            String output = String.valueOf(code);
+            
+            if (isHfcMode) {
+                output = convertToHfc(code);
+            } else {
+                // Agar user HFC symbol type kare, to Eng nikle (Logic for Decryption)
+                // Note: QWERTY par letters hain, isliye manually switch mode zaroori hai
+                output = String.valueOf(code); 
+            }
+            ic.commitText(output, 1);
         }
     }
 
-    // HFC Cipher Archive Mapping
-    private String convert(char c) {
+    private String convertToHfc(char c) {
         switch(Character.toLowerCase(c)) {
             case 'a': return "+";   case 'b': return "[]";  case 'c': return "©";
             case 'd': return "÷";   case 'e': return "=";   case 'f': return "_";
@@ -47,11 +79,7 @@ public class HfcKeyboardService extends InputMethodService implements KeyboardVi
         }
     }
 
-    @Override public void onPress(int p) {}
-    @Override public void onRelease(int p) {}
-    @Override public void onText(CharSequence t) {}
-    @Override public void swipeLeft() {}
-    @Override public void swipeRight() {}
-    @Override public void swipeDown() {}
-    @Override public void swipeUp() {}
+    @Override public void onPress(int p) {} @Override public void onRelease(int p) {}
+    @Override public void onText(CharSequence t) {} @Override public void swipeLeft() {}
+    @Override public void swipeRight() {} @Override public void swipeDown() {} @Override public void swipeUp() {}
 }
