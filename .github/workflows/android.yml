@@ -16,12 +16,12 @@ jobs:
 
       - name: Setup Gradle Wrapper
         run: |
-          gradle wrapper --gradle-version 7.4.2
+          gradle wrapper --gradle-version 7.5
           chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew assembleDebug --stacktrace
-
+        run: ./gradlew assembleDebug --no-daemon
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
