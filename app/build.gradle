@@ -5,7 +5,6 @@ plugins {
 android {
     namespace 'com.hfc.keyboard'
     compileSdk 33
-
     defaultConfig {
         applicationId "com.hfc.keyboard"
         minSdk 21
@@ -13,8 +12,4 @@ android {
         versionCode 1
         versionName "1.0"
     }
-}
-
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
 }
