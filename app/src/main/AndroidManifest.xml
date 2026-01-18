@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.hfc.keyboard">
-
-    <application 
-        android:label="HFC Pro" 
-        android:allowBackup="true"
-        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+    <application android:label="HFC Keyboard" android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
         
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
@@ -13,14 +9,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".HfcKeyboardService" 
-                 android:permission="android.permission.BIND_INPUT_METHOD" 
-                 android:exported="true">
-            <intent-filter>
-                <action android:name="android.view.InputMethod" />
-            </intent-filter>
+        <service android:name=".HfcKeyboardService" android:permission="android.permission.BIND_INPUT_METHOD" android:exported="true">
+            <intent-filter><action android:name="android.view.InputMethod" /></intent-filter>
             <meta-data android:name="android.view.im" android:resource="@xml/method" />
         </service>
-
     </application>
 </manifest>
