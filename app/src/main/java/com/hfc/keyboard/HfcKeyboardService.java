@@ -3,29 +3,34 @@ package com.hfc.keyboard;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
-import android.content.SharedPreferences;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HfcKeyboardService extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
-    private boolean isHfcMode = true;
+    private boolean isHfcMode = true; // Default HFC mode
+    private Map<String, String> hfcToEng = new HashMap<>();
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // HFC to English Mapping
+        hfcToEng.put("+", "a");  hfcToEng.put("[]", "b"); hfcToEng.put("©", "c");
+        hfcToEng.put("÷", "d");  hfcToEng.put("=", "e");  hfcToEng.put("_", "f");
+        hfcToEng.put(">", "g");  hfcToEng.put("|", "h");  hfcToEng.put("!", "i");
+        hfcToEng.put("#", "j");  hfcToEng.put(":", "k");  hfcToEng.put("<", "l");
+        hfcToEng.put("*", "m");  hfcToEng.put("°", "n");  hfcToEng.put("()", "o");
+        hfcToEng.put("¶", "p");  hfcToEng.put("?", "q");  hfcToEng.put("®", "r");
+        hfcToEng.put("$", "s");  hfcToEng.put("™", "t");  hfcToEng.put("'", "u");
+        hfcToEng.put("^", "v");  hfcToEng.put("&", "w");  hfcToEng.put("`", "x");
+        hfcToEng.put("~", "y");  hfcToEng.put("℅", "z");
+    }
 
     @Override
     public View onCreateInputView() {
-        SharedPreferences prefs = getSharedPreferences("hfc_prefs", MODE_PRIVATE);
-        boolean showNumbers = prefs.getBoolean("show_numbers", true);
-        int heightBoost = prefs.getInt("kb_height", 50);
-
         KeyboardView kv = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
-        
-        // Qwerty selection based on settings
-        int layoutId = showNumbers ? R.xml.qwerty : R.xml.qwerty_no_numbers;
-        Keyboard keyboard = new Keyboard(this, layoutId);
-        
-        // Set height dynamically
-        keyboard.setKeyHeight(120 + heightBoost); 
-
-        kv.setKeyboard(keyboard);
+        kv.setKeyboard(new Keyboard(this, R.xml.qwerty));
         kv.setOnKeyboardActionListener(this);
         return kv;
     }
@@ -35,7 +40,10 @@ public class HfcKeyboardService extends InputMethodService implements KeyboardVi
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) return;
 
-        if (primaryCode == -100) { isHfcMode = !isHfcMode; return; }
+        if (primaryCode == -100) { // Custom code for Switch Button
+            isHfcMode = !isHfcMode;
+            return;
+        }
 
         if (primaryCode == Keyboard.KEYCODE_DELETE) {
             ic.deleteSurroundingText(1, 0);
@@ -43,8 +51,16 @@ public class HfcKeyboardService extends InputMethodService implements KeyboardVi
             ic.commitText(" ", 1);
         } else {
             char code = (char) primaryCode;
-            if (isHfcMode) ic.commitText(convertToHfc(code), 1);
-            else ic.commitText(String.valueOf(code), 1);
+            String output = String.valueOf(code);
+            
+            if (isHfcMode) {
+                output = convertToHfc(code);
+            } else {
+                // Agar user HFC symbol type kare, to Eng nikle (Logic for Decryption)
+                // Note: QWERTY par letters hain, isliye manually switch mode zaroori hai
+                output = String.valueOf(code); 
+            }
+            ic.commitText(output, 1);
         }
     }
 
