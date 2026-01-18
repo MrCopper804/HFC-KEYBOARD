@@ -2,7 +2,6 @@ package com.hfc.keyboard;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
@@ -21,94 +20,82 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupMaps();
-        SharedPreferences prefs = getSharedPreferences("hfc_prefs", MODE_PRIVATE);
 
-        ScrollView scrollView = new ScrollView(this);
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setBackgroundColor(Color.BLACK);
-        layout.setPadding(50, 50, 50, 50);
+        layout.setBackgroundColor(Color.parseColor("#000000"));
+        layout.setPadding(40, 40, 40, 40);
 
-        // --- Customization Section ---
-        TextView title = new TextView(this);
-        title.setText("HFC KEYBOARD PRO SETTINGS");
-        title.setTextColor(Color.CYAN);
-        title.setTextSize(22);
-        title.setPadding(0, 0, 0, 40);
-
-        CheckBox cbNumbers = new CheckBox(this);
-        cbNumbers.setText("Show Number Row");
-        cbNumbers.setTextColor(Color.WHITE);
-        cbNumbers.setChecked(prefs.getBoolean("show_numbers", true));
-        cbNumbers.setOnCheckedChangeListener((v, isChecked) -> prefs.edit().putBoolean("show_numbers", isChecked).apply());
-
-        TextView hLabel = new TextView(this);
-        hLabel.setText("\nKeyboard Height Boost:");
-        hLabel.setTextColor(Color.WHITE);
-
-        SeekBar heightBar = new SeekBar(this);
-        heightBar.setMax(150);
-        heightBar.setProgress(prefs.getInt("kb_height", 50));
-        heightBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            public void onProgressChanged(SeekBar s, int p, boolean b) { prefs.edit().putInt("kb_height", p).apply(); }
-            public void onStartTrackingTouch(SeekBar s) {}
-            public void onStopTrackingTouch(SeekBar s) {}
-        });
-
+        // Buttons for Setup
         Button btnEnable = new Button(this);
-        btnEnable.setText("ENABLE KEYBOARD");
+        btnEnable.setText("1. ENABLE KEYBOARD");
         btnEnable.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)));
 
-        // --- Translator Section ---
-        TextView tLabel = new TextView(this);
-        tLabel.setText("\n--- HFC TRANSLATOR ---");
-        tLabel.setTextColor(Color.YELLOW);
+        Button btnSelect = new Button(this);
+        btnSelect.setText("2. SELECT HFC");
+        btnSelect.setOnClickListener(v -> {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            imm.showInputMethodPicker();
+        });
+
+        // Translation Box
+        TextView label = new TextView(this);
+        label.setText("\n--- HFC TRANSLATOR ---");
+        label.setTextColor(Color.CYAN);
 
         EditText inputField = new EditText(this);
-        inputField.setHint("Type Eng or Paste HFC...");
+        inputField.setHint("Type English or Paste HFC here...");
         inputField.setHintTextColor(Color.GRAY);
         inputField.setTextColor(Color.WHITE);
 
         TextView outputField = new TextView(this);
         outputField.setTextSize(18);
         outputField.setTextColor(Color.GREEN);
+        outputField.setPadding(0, 20, 0, 0);
 
         inputField.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
                 String in = s.toString();
-                if (in.contains("+") || in.contains("[]") || in.contains("©")) outputField.setText("RESULT: " + decode(in));
-                else outputField.setText("RESULT: " + encode(in));
+                if (in.contains("+") || in.contains("[]") || in.contains("©")) {
+                    outputField.setText("ENG: " + decode(in));
+                } else {
+                    outputField.setText("HFC: " + encode(in));
+                }
             }
-            public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
-            public void onTextChanged(CharSequence s, int st, int b, int c) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });
 
-        layout.addView(title);
-        layout.addView(cbNumbers);
-        layout.addView(hLabel);
-        layout.addView(heightBar);
         layout.addView(btnEnable);
-        layout.addView(tLabel);
+        layout.addView(btnSelect);
+        layout.addView(label);
         layout.addView(inputField);
         layout.addView(outputField);
-        
-        scrollView.addView(layout);
-        setContentView(scrollView);
+        setContentView(layout);
     }
 
     private void setupMaps() {
+        // Data from Archive
         String[][] data = {{"a","+"}, {"b","[]"}, {"c","©"}, {"d","÷"}, {"e","="}, {"f","_"}, {"g",">"}, {"h","|"}, {"i","!"}, {"j","#"}, {"k",":"}, {"l","<"}, {"m","*"}, {"n","°"}, {"o","()"}, {"p","¶"}, {"q","?"}, {"r","®"}, {"s","$"}, {"t","™"}, {"u","'"}, {"v","^"}, {"w","&"}, {"x","`"}, {"y","~"}, {"z","℅"}};
-        for(String[] p : data) { engToHfc.put(p[0].charAt(0), p[1]); hfcToEng.put(p[1], p[0]); }
+        for(String[] pair : data) {
+            engToHfc.put(pair[0].charAt(0), pair[1]);
+            hfcToEng.put(pair[1], pair[0]);
+        }
     }
 
     private String encode(String s) {
         StringBuilder sb = new StringBuilder();
-        for(char c : s.toLowerCase().toCharArray()) sb.append(engToHfc.getOrDefault(c, String.valueOf(c)));
+        for(char c : s.toLowerCase().toCharArray()) {
+            sb.append(engToHfc.getOrDefault(c, String.valueOf(c)));
+        }
         return sb.toString();
     }
 
     private String decode(String s) {
-        for (Map.Entry<String, String> entry : hfcToEng.entrySet()) s = s.replace(entry.getKey(), entry.getValue());
+        // Simple decoder for symbols
+        for (Map.Entry<String, String> entry : hfcToEng.entrySet()) {
+            s = s.replace(entry.getKey(), entry.getValue());
+        }
         return s;
     }
 }
